@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("UDP-Chat (Server)")]
+[assembly: AssemblyTitle("UDP-Chat (Program)")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("gypnor")]
-[assembly: AssemblyProduct("UDP-Chat (Server)")]
+[assembly: AssemblyProduct("UDP-Chat (Program)")]
 [assembly: AssemblyCopyright("Copyright © gypnor 2018")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]

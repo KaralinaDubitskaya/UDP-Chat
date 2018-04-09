@@ -31,6 +31,14 @@ namespace UDP_Chat__Server_
             Message = "";
         }
 
+        // Default constructor
+        public Data(string username, Command command, string message)
+        {
+            Username = username;
+            Command  = command;
+            Message  = message;
+        }
+
         // Creates an object of type Data from the received array of bytes
         public Data(byte[] data)
         {
