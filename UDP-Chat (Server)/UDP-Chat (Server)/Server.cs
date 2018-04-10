@@ -32,6 +32,9 @@ namespace UDP_Chat__Server_
         // List of the clients logged into the chat
         private List<Client> clientList;
 
+        // Server is listening on port 11000
+        private const int SERVER_PORT = 11000;
+
         // Dafault constructor
         public Server(int bufferSize = 1024)
         {
@@ -51,8 +54,8 @@ namespace UDP_Chat__Server_
                 // Use UDP protocol
                 serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
 
-                // Represents the server endpoint as any local machine IP address and a port 11000
-                IPEndPoint serverEndPoint = new IPEndPoint(IPAddress.Any, 11000);
+                // Represents the server endpoint as any local machine IP address and a port number SERVER_PORT
+                IPEndPoint serverEndPoint = new IPEndPoint(IPAddress.Any, SERVER_PORT);
 
                 // Associates the serverSocket with a serverEndPoint
                 serverSocket.Bind(serverEndPoint);
