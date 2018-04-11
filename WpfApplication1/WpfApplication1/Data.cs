@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace UDP_Chat__Client_
+namespace WpfApplication1
 {
     // The comands for interaction between the server and the client
     public enum Command
@@ -59,32 +59,32 @@ namespace UDP_Chat__Client_
 
         public byte[] ToBytes()
         {
-            List<byte> result = new List<byte>();
+            byte[] result = new byte[0];
 
             // The first byte contains the command index
-            result.Add((byte)Command);
+            result.Concat(BitConverter.GetBytes((byte)Command));
 
             // 1..4 bytes contain the length of the Username
             if (Username != null)
-                result.AddRange(BitConverter.GetBytes((Int32)Username.Length));
+                result.Concat(BitConverter.GetBytes((Int32)Username.Length));
             else
-                result.AddRange(BitConverter.GetBytes(0));
+                result.Concat(BitConverter.GetBytes(0));
 
             // 5..8 bytes contain the length of the Message
             if (Message != null)
-                result.AddRange(BitConverter.GetBytes((Int32)Message.Length));
+                result.Concat(BitConverter.GetBytes((Int32)Message.Length));
             else
-                result.AddRange(BitConverter.GetBytes(0));
+                result.Concat(BitConverter.GetBytes(0));
 
             // Add the username
             if (Username != null)
-                result.AddRange(Encoding.UTF8.GetBytes(Username));
+                result.Concat(Encoding.UTF8.GetBytes(Username));
 
             // Add the message text
             if (Message != null)
-                result.AddRange(Encoding.UTF8.GetBytes(Message));
+                result.Concat(Encoding.UTF8.GetBytes(Message));
 
-            return result.ToArray();
+            return result;
         }
     }
 }

@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace UDP_Chat__Server_
 {
@@ -47,7 +48,7 @@ namespace UDP_Chat__Server_
             serverSocket = null;
         }
 
-        public void Listen()
+        public void Listen(object window)
         {
             try
             {
@@ -66,9 +67,9 @@ namespace UDP_Chat__Server_
                 // Begins to asynchronously receive data
                 StartReceiveData(ref sender);
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                Console.WriteLine("Error: " + e.Message);
+               // throw ex;
             }
         }
 
@@ -145,9 +146,9 @@ namespace UDP_Chat__Server_
                         }
                 }
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                Console.WriteLine("Error: " + e.Message);
+               // throw ex;
             }
         }
 
@@ -158,9 +159,9 @@ namespace UDP_Chat__Server_
             {
                 serverSocket.EndSend(result);
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                Console.WriteLine("Error: " + e.Message);
+                //throw ex;
             }
         }
 
@@ -244,7 +245,7 @@ namespace UDP_Chat__Server_
 
         private void PrintMessage(Data message)
         {
-            Console.WriteLine(message.Message);
+            MessageBox.Show(message.Message);
         }
     }
 }

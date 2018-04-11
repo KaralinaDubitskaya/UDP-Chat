@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -30,26 +31,30 @@ namespace UDP_Chat__Client_
             // Create and login the user
             Client user = new Client();
 
-            try
+            user.ExceptionReport += (exceptionSender, args) =>
             {
-                user.Login(tbUsername.Text, tbIP.Text);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Error: " + ex.Message, "UDP Chat",
+                MessageBox.Show("Error: " + args.Exception.Message, "UDP Chat",
                     MessageBoxButton.OK, MessageBoxImage.Error);
+            };
+            
+            // Connect to the server
+            user.Login(tbUsername.Text, tbIP.Text);
 
+            if (user.IsConnected == true)
+            {
+                // Show main window of the chat
+                Window MainWindow = new MainWindow();
+                MainWindow.Show();
+
+                // Close the registration form
+                Close();
+            }
+            else
+            {
                 tbIP.Text = "";
                 btnSend.IsEnabled = false;
                 Show();
             }
-
-            // Show main window of the chat
-            Window MainWindow = new MainWindow();
-            MainWindow.Show();
-
-            // Close the registration form
-            Close();
         }
 
         private void tb_TextChanged(object sender, EventArgs e)

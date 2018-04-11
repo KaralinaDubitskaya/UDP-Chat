@@ -1,0 +1,14 @@
+﻿<Window x:Class="UDP_Chat__Server_.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:UDP_Chat__Server_"
+        mc:Ignorable="d"
+        Title="UDP Chat | Server" Height="350" Width="525" Background="LightBlue">
+    <Grid>
+        <TextBlock x:Name="tbChat" HorizontalAlignment="Left" Background="White" Height="321" Margin="0,0,0,-0.2" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="413"/>
+        <TextBlock x:Name="tbUsers" HorizontalAlignment="Left" Background="White" Height="320" Margin="416,1,0,-0.2" TextWrapping="Wrap" Text="Users:" VerticalAlignment="Top" Width="102"/>
+
+    </Grid>
+</Window>

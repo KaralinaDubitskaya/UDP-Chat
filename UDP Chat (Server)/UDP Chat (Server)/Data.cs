@@ -35,8 +35,8 @@ namespace UDP_Chat__Server_
         public Data(string username, Command command, string message)
         {
             Username = username;
-            Command  = command;
-            Message  = message;
+            Command = command;
+            Message = message;
         }
 
         // Creates an object of type Data from the received array of bytes
@@ -51,40 +51,40 @@ namespace UDP_Chat__Server_
             // 5..8 bytes contain the length of the Message
             int messageLen = BitConverter.ToInt32(data, 5);
 
-            Command = Enumerable.Range(0, Enum.GetNames(typeof(Command)).Length).Contains(commandIndex) ? 
+            Command = Enumerable.Range(0, Enum.GetNames(typeof(Command)).Length).Contains(commandIndex) ?
                 (Command)commandIndex : Command.Null;
             Username = (usernameLen > 0) ? Encoding.UTF8.GetString(data, 9, usernameLen) : "";
-            Message  = (messageLen > 0)  ? Encoding.UTF8.GetString(data, 9 + usernameLen, messageLen) : "";
+            Message = (messageLen > 0) ? Encoding.UTF8.GetString(data, 9 + usernameLen, messageLen) : "";
         }
 
         public byte[] ToBytes()
         {
-            byte[] result = new byte[0];
+            List<byte> result = new List<byte>();
 
             // The first byte contains the command index
-            result.Concat(BitConverter.GetBytes((byte)Command));
+            result.Add((byte)Command);
 
             // 1..4 bytes contain the length of the Username
             if (Username != null)
-                result.Concat(BitConverter.GetBytes((Int32)Username.Length));
+                result.AddRange(BitConverter.GetBytes(Username.Length));
             else
-                result.Concat(BitConverter.GetBytes(0));
+                result.AddRange(BitConverter.GetBytes(0));
 
             // 5..8 bytes contain the length of the Message
             if (Message != null)
-                result.Concat(BitConverter.GetBytes((Int32)Message.Length));
+                result.AddRange(BitConverter.GetBytes(Message.Length));
             else
-                result.Concat(BitConverter.GetBytes(0));
+                result.AddRange(BitConverter.GetBytes(0));
 
             // Add the username
             if (Username != null)
-                result.Concat(Encoding.UTF8.GetBytes(Username));
+                result.AddRange(Encoding.UTF8.GetBytes(Username));
 
             // Add the message text
             if (Message != null)
-                result.Concat(Encoding.UTF8.GetBytes(Message));
+                result.AddRange(Encoding.UTF8.GetBytes(Message));
 
-            return result;
+            return result.ToArray();
         }
     }
 }
