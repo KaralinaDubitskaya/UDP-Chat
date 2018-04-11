@@ -43,8 +43,8 @@ namespace UDP_Chat__Client_
             if (user.IsConnected == true)
             {
                 // Show main window of the chat
-                Window MainWindow = new MainWindow();
-                MainWindow.Show();
+                MainForm MainForm = new MainForm(user);
+                MainForm.ShowDialog();
 
                 // Close the registration form
                 Close();

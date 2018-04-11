@@ -11,12 +11,22 @@ namespace UDP_Chat__Client_
 {
     public class Client
     {
-        private string username;   // The username of the client
         private Socket socket;     // Provides communication with server 
         private EndPoint server;   // Network address of the server
 
+        // The username of the client
+        public string Username { get; private set; }
+
         // Server is listening on port 11000
         private const int SERVER_PORT = 11000;
+
+        // Buffer for received datagram
+        private byte[] buffer;
+
+        public MainForm.AddUserDelegate AddUserDelegate { get; set; }
+        public MainForm.RemoveUserDelegate RemoveUserDelegate { get; set; }
+        public MainForm.SetUsersDelegate SetUsersDelegate { get; set; }
+        public MainForm.AddMessageDelegate AddMessageDelegate { get; set; }
 
         // True if user is connected to the server
         public bool IsConnected
@@ -29,8 +39,8 @@ namespace UDP_Chat__Client_
 
                 // Socket.Available returns number of bytes available for reading
                 bool isAvailable = (socket.Available == 0);
-                
-                if (isActive && isAvailable) 
+
+                if (isActive && isAvailable)
                     return true;
                 else
                     return false;
@@ -38,11 +48,14 @@ namespace UDP_Chat__Client_
         }
 
         // Default constructor
-        public Client()
+        public Client(uint bufferSize = 1024)
         {
-            username = "";
+            Username = "";
             socket = null;
             server = null;
+
+            // Max size in bytes of each datagram = bufferSize 
+            buffer = new byte[bufferSize];
         }
 
         // Connection to server
@@ -66,7 +79,7 @@ namespace UDP_Chat__Client_
         public void Login(string name, string serverIP)
         {
             // Set username of the client
-            username = name;
+            Username = name;
 
             try
             {
@@ -74,8 +87,8 @@ namespace UDP_Chat__Client_
                 Connect(serverIP);
 
                 // Send login request to the server
-                Data message = new Data(username, Command.LogIn, "");
-                SendMessage(message, server);
+                Data message = new Data(Username, Command.LogIn, "");
+                Send(message, server);
             }
             catch (Exception ex)
             {
@@ -83,17 +96,39 @@ namespace UDP_Chat__Client_
             }
         }
 
+        // Begins to asynchronously receive data from sender
+        private void StartReceiveData()
+        {
+            socket.BeginReceiveFrom(buffer, 0, buffer.Length, SocketFlags.None, ref server,
+                    new AsyncCallback(OnReceive), null);
+        }
 
         // Send message to the server
-        private void SendMessage(Data message, EndPoint receiver)
+        public void SendMessage(string text)
+        {
+            Data message = new Data(Username, Command.SendMsg, text);
+            Send(message, server);
+        }
+
+        // Request the server to send the names of all users of the chat room
+        public void RequestUsers()
+        {
+            Data message = new Data("", Command.GetUsers, "");
+            Send(message, server);
+
+            StartReceiveData();
+        }
+
+        // Send message to the receiver
+        private void Send(Data message, EndPoint receiver)
         {
             byte[] buffer = message.ToBytes();
 
             try
             {
-                // Send datagram to the server
-                socket.BeginSendTo(buffer, 0, buffer.Length, SocketFlags.None, server,
-                    new AsyncCallback(OnSend), server);
+                // Send datagram to the receiver
+                socket.BeginSendTo(buffer, 0, buffer.Length, SocketFlags.None, receiver,
+                    new AsyncCallback(OnSend), receiver);
             }
             catch (SocketException socketException)
             {
@@ -132,7 +167,68 @@ namespace UDP_Chat__Client_
                 OnExceptionReport(ex);
             }
         }
+
+        private void OnReceive(IAsyncResult ar)
+        {
+            try
+            {
+                // Ends a pending asynchronous read from the server
+                socket.EndReceiveFrom(ar, ref server);
+
+                // The message received from the server
+                Data message = new Data(buffer);
+
+                switch (message.Command)
+                {
+                    case Command.LogIn:
+                        {
+                            AddUserDelegate(message.Username);
+                            AddMessageDelegate(message.Message);
+                            break;
+                        }
+
+                    case Command.LogOut:
+                        {
+                            RemoveUserDelegate(message.Username);
+                            AddMessageDelegate(message.Message);
+                            break;
+                        }
+                    case Command.GetUsers:
+                        {
+                            SetUsersDelegate(message.Message.Split('*'));
+                            AddMessageDelegate($"*** {Username} ***");
+                            break;
+                        }
+                }
+
+                buffer = new byte[1024];
+                StartReceiveData();
+            }
+            catch (Exception ex)
+            {
+                OnExceptionReport(ex);
+            }
+        }
+
+        public void LogOut()
+        {
+            try
+            {
+                //Send a message to logout of the server
+                Data message = new Data(Username, Command.LogOut, "");
+                buffer = message.ToBytes();
+                Send(message, server);
+
+                socket.Close();
+            }
+            catch (ObjectDisposedException) {  }
+            catch (Exception ex)
+            {
+                OnExceptionReport(ex);
+            }
+        }
     }
+
 
     public class ExceptionReportEventArgs : EventArgs
     {

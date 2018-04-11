@@ -5,7 +5,6 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows;
 
 namespace UDP_Chat__Server_
 {
@@ -36,8 +35,11 @@ namespace UDP_Chat__Server_
         // Server is listening on port 11000
         private const int SERVER_PORT = 11000;
 
+        private Form.SetMessage SetMessageDelegate;
+        private Form.SetUsers SetUsersDelegate;
+
         // Dafault constructor
-        public Server(int bufferSize = 1024)
+        public Server(uint bufferSize = 1024)
         {
             // Max size in bytes of each datagram = bufferSize 
             buffer = new byte[bufferSize];
@@ -48,7 +50,7 @@ namespace UDP_Chat__Server_
             serverSocket = null;
         }
 
-        public void Listen(object window)
+        public void Listen(Form.SetMessage setMessage, Form.SetUsers setUsers)
         {
             try
             {
@@ -64,12 +66,15 @@ namespace UDP_Chat__Server_
                 // Server listen for client activity on all network interfaces
                 EndPoint sender = new IPEndPoint(IPAddress.Any, 0);
 
+                SetMessageDelegate = setMessage;
+                SetUsersDelegate = setUsers;
+
                 // Begins to asynchronously receive data
                 StartReceiveData(ref sender);
             }
             catch (Exception ex)
             {
-               // throw ex;
+                OnExceptionReport(ex);
             }
         }
 
@@ -77,7 +82,7 @@ namespace UDP_Chat__Server_
         private void StartReceiveData(ref EndPoint sender)
         {
             serverSocket.BeginReceiveFrom(buffer, 0, buffer.Length, SocketFlags.None, ref sender,
-                    new AsyncCallback(OnReceive), sender);
+                    new AsyncCallback(OnReceive), null);
         }
 
         // Process received data
@@ -98,6 +103,7 @@ namespace UDP_Chat__Server_
                         {
                             // Add the user to the chat room and get the response message
                             Data response = AddUser(message.Username, sender);
+                            SetUsersDelegate(clientList);
 
                             // Send message to all the users of the chat
                             SendMessage(response);
@@ -112,6 +118,7 @@ namespace UDP_Chat__Server_
                         {
                             // Remove the user from the chat room and get the response message
                             Data response = RemoveUser(sender);
+                            SetUsersDelegate(clientList);
 
                             // Send message to all the users of the chat
                             SendMessage(response);
@@ -148,7 +155,7 @@ namespace UDP_Chat__Server_
             }
             catch (Exception ex)
             {
-               // throw ex;
+                OnExceptionReport(ex);
             }
         }
 
@@ -161,7 +168,7 @@ namespace UDP_Chat__Server_
             }
             catch (Exception ex)
             {
-                //throw ex;
+                OnExceptionReport(ex);
             }
         }
 
@@ -174,6 +181,8 @@ namespace UDP_Chat__Server_
             // Set the response
             Data response = new Data();
             response.Message = "*** " + client.username + " has joined the chat ***";
+
+            
 
             return response;
         }
@@ -218,7 +227,7 @@ namespace UDP_Chat__Server_
         }
 
         // Send message to the network address
-        private void SendMessage(Data message, EndPoint receiver)
+        private void SendMessage(Data message, System.Net.EndPoint receiver)
         {
             byte[] buffer = message.ToBytes();
 
@@ -245,7 +254,25 @@ namespace UDP_Chat__Server_
 
         private void PrintMessage(Data message)
         {
-            MessageBox.Show(message.Message);
+            SetMessageDelegate(message.Message);
+        }
+
+        public event EventHandler<ExceptionReportEventArgs> ExceptionReport;
+
+        private void OnExceptionReport(Exception exception)
+        {
+            EventHandler<ExceptionReportEventArgs> handler = ExceptionReport;
+            handler(this, new ExceptionReportEventArgs(exception));
+        }
+    }
+
+    public class ExceptionReportEventArgs : EventArgs
+    {
+        public Exception Exception { get; private set; }
+
+        public ExceptionReportEventArgs(Exception exception)
+        {
+            Exception = exception;
         }
     }
 }
